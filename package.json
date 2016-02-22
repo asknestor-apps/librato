@@ -1,24 +1,25 @@
 {
-  "name": "hubot-librato",
+  "name": "nestor-librato",
   "version": "0.0.6",
-  "description": "Hubot script that gets your graphs from Librato",
+  "description": "nestor app that gets your graphs from Librato",
   "main": "index.coffee",
   "author": "Eric Koslow <ekoslow@gmail.com> (https://github.com/ekosz)",
   "keywords": [
-    "hubot",
+    "nestor",
     "hubot-scripts",
+    "hubot",
     "librato"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/ekosz/hubot-librato",
+  "homepage": "https://github.com/asknestor-apps/librato",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ekosz/hubot-librato.git"
+    "url": "https://github.com/asknestor-apps/librato.git"
   },
   "bugs": {
-    "url": "https://github.com/ekosz/hubot-librato/issues"
+    "url": "https://github.com/asknestor-apps/librato/issues"
   },
   "dependencies": {
-    "coffee-script": "1.8.x"
+    "nestorbot": "0.14.0"
   }
 }

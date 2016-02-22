@@ -1,0 +1,9 @@
+{
+  "name": "Librato",
+  "permalink": "librato",
+  "description": "Get your graphs from Librato",
+  "environment_keys": {
+    "NESTOR_LIBRATO_USER": true,
+    "NESTOR_LIBRATO_TOKEN" : true
+  }
+}
