@@ -31,28 +31,26 @@ var getSnapshot = function(url, msg, robot, done) {
     Accept: 'application/json'
   }).get()(function(err, res, body) {
     var json;
-    switch (res.statusCode) {
-      case 200:
-        json = JSON.parse(body);
-        if (json['image_href']) {
-          return msg.reply(json['image_href']);
-        } else {
-          setTimeout((function() {
-            getSnapshot(url, msg, robot, done);
-          }), 100);
-        }
-        break;
-      case 204:
+    if (res.statusCode == 200) {
+      json = JSON.parse(body);
+      if (json['image_href']) {
+        msg.reply(json['image_href'], done);
+      } else {
         setTimeout((function() {
           getSnapshot(url, msg, robot, done);
         }), 100);
-      default:
-        msg.reply("Unable to get snap shot from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
+      }
+    } else if (res.statusCode == 204 || res.statusCode == 202) {
+      setTimeout((function() {
+        getSnapshot(url, msg, robot, done);
+      }), 100);
+    } else {
+      msg.reply("Unable to get snap shot from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
     }
   });
 };
 
-var createSnapshot = function(inst, source, time, msg, robot) {
+var createSnapshot = function(inst, source, time, msg, robot, done) {
   var auth, data, pass, url, user;
   url = "https://metrics-api.librato.com/v1/snapshots";
   data = JSON.stringify({
@@ -75,15 +73,14 @@ var createSnapshot = function(inst, source, time, msg, robot) {
     'Content-Type': 'application/json'
   }).post(data)(function(err, res, body) {
     var json;
-    switch (res.statusCode) {
-      case 201:
-        json = JSON.parse(body);
-        msg.reply(json['image_href'], done);
-      case 202:
-        json = JSON.parse(body);
-        getSnapshot(json['href'], msg, robot, done);
-      default:
-        msg.reply("Unable to create snap shot from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
+    if (res.statusCode == 201) {
+      json = JSON.parse(body);
+      msg.reply(json['image_href'], done);
+    } else if(res.statusCode == 202) {
+      json = JSON.parse(body);
+      getSnapshot(json['href'], msg, robot, done);
+    } else {
+      msg.reply("Unable to create snap shot from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
     }
   });
 };
@@ -114,24 +111,47 @@ var processInstrumentResponse = function(body, source, msg, timePeriod, robot, d
 };
 
 module.exports = function(robot) {
+  robot.respond(/graph me$/, function(msg, done) {
+    var user = process.env.NESTOR_LIBRATO_USER;
+    var pass = process.env.NESTOR_LIBRATO_TOKEN;
+    var auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64');
+
+    robot.http("https://metrics-api.librato.com/v1/instruments").headers({
+      Authorization: auth,
+      Accept: 'application/json'
+    }).get()(function(err, res, body) {
+      if(res.statusCode == 200) {
+        var names = [];
+        json = JSON.parse(body);
+
+        msg.reply("Here are the list of instruments").then(function() {
+          names = json['instruments'].map(function(inst) {
+            return "* " + inst.name;
+          });
+          msg.send(names, done);
+        });
+      } else {
+        msg.reply("Couldn't find any instruments on Librato", done);
+      }
+    });
+  });
+
   robot.respond(/graph me ([\w\.:\- ]+?)\s*(?:over the (?:last|past)? )?(\d+ (?:second|minute|hour|day|week)s?)?(?: source (.+))?$/i, function(msg, done) {
-    var auth, instrument, pass, source, timePeriod, user;
-    instrument = msg.match[1];
-    timePeriod = msg.match[2] || 'hour';
-    source = msg.match[3] || '*';
-    user = process.env.NESTOR_LIBRATO_USER;
-    pass = process.env.NESTOR_LIBRATO_TOKEN;
-    auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64');
+    var instrument = msg.match[1];
+    var timePeriod = msg.match[2] || 'hour';
+    var source = msg.match[3] || '*';
+    var user = process.env.NESTOR_LIBRATO_USER;
+    var pass = process.env.NESTOR_LIBRATO_TOKEN;
+    var auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64');
 
     robot.http("https://metrics-api.librato.com/v1/instruments?name=" + (escape(instrument))).headers({
       Authorization: auth,
       Accept: 'application/json'
     }).get()(function(err, res, body) {
-      switch (res.statusCode) {
-        case 200:
-          processInstrumentResponse(body, source, msg, timePeriod, robot, done);
-        default:
-          msg.reply("Unable to get list of instruments from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
+      if(res.statusCode == 200) {
+        processInstrumentResponse(body, source, msg, timePeriod, robot, done);
+      } else {
+        msg.reply("Unable to get list of instruments from librato :(\nStatus Code: " + res.statusCode + "\nBody:\n\n" + body, done);
       }
     });
   });
