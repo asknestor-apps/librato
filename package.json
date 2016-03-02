@@ -20,6 +20,6 @@
     "url": "https://github.com/asknestor-apps/librato/issues"
   },
   "dependencies": {
-    "nestorbot": "0.17.1"
+    "nestorbot": "0.18.0"
   }
 }
