@@ -3,8 +3,17 @@
   "permalink": "librato",
   "description": "Get your graphs from Librato",
   "environment_keys": {
-    "NESTOR_LIBRATO_USER": true,
-    "NESTOR_LIBRATO_TOKEN" : true,
-    "NESTOR_LIBRATO_DEFAULT_SPACE": false
+    "NESTOR_LIBRATO_USER": {
+      "required": true,
+      "mode": "user"
+    },
+    "NESTOR_LIBRATO_TOKEN" : {
+      "required": true,
+      "mode": "user"
+    },
+    "NESTOR_LIBRATO_DEFAULT_SPACE": {
+      "required": false,
+      "mode": "user"
+    }
   }
 }
