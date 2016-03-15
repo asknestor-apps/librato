@@ -122,7 +122,7 @@ module.exports = function(robot) {
     });
   };
 
-  robot.respond(/librato spaces$/, function(msg, done) {
+  robot.respond(/librato spaces$/, { suggestions: ["librato spaces"] }, function(msg, done) {
     getSpaces(function(spaces) {
       if (spaces == null) {
         msg.reply("Couldn't find any spaces on Librato", done);
@@ -135,7 +135,7 @@ module.exports = function(robot) {
     });
   });
 
-  robot.respond(/librato charts (.*)$/, function(msg, done) {
+  robot.respond(/librato charts (.*)$/, { suggestions: ["librato charts <space-name>"] }, function(msg, done) {
     var chartName = msg.match[1];
     getSpaces(function(spaces) {
       var chosenSpace = null;
@@ -160,7 +160,7 @@ module.exports = function(robot) {
     });
   });
 
-  robot.respond(/graph me ([\w\.:\- ]+?)\s*(?:over the (?:last|past)? )?(\d+ (?:second|minute|hour|day|week)s?)?(?: source (.+))?(?: space (.+))?$/i, function(msg, done) {
+  robot.respond(/graph me ([\w\.:\- ]+?)\s*(?:over the (?:last|past)? )?(\d+ (?:second|minute|hour|day|week)s?)?(?: source (.+))?(?: space (.+))?$/i, { suggestions: ["graph me <chart-name> [time period] [source <source>] [space <space>]"] }, function(msg, done) {
     var chartName = msg.match[1];
     var timePeriod = msg.match[2] || 'hour';
     var source = msg.match[3] || '*';
